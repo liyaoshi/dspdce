@@ -85,10 +85,11 @@ void tools_ShowVersion()
     System_printf("\n\n **** DSPMM VERSION INFO **** \n\nCompile DATE %s TIME %s \n", __DATE__, __TIME__);
 
     System_printf("\n** DSPMM VERSION INFO END ** \n");
-
+#if 0
     System_printf("Trace Buffer PA 0x%x Trace Level %d\
                    \nTrace Usage: level:[0-4: 0-no trace, 1-err, 2-debug, 3-info, 4-CE,FC,IPC traces] \n\n",
                   MEMUTILS_getPhysicalAddr((Ptr)(TRACEBUFADDR)), dce_debug);
+#endif
 }
 
 int main(int argc, char * *argv)

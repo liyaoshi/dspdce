@@ -24,17 +24,17 @@ for (x = 0; x < arguments.length; x++)
  *  --- External Memory ---
  *  Virtual     Physical        Size            Comment
  *  ------------------------------------------------------------------------
- *  9500_0000   ????_????    10_0000  (  ~1 MB) EXT_CODE
- *  9510_0000   ????_????    10_0000  (   1 MB) EXT_DATA
- *  9520_0000   ????_????    30_0000  (  3 MB) EXT_HEAP
+ *  9500_0000   ????_????    20_0000  (  ~2 MB) EXT_CODE
+ *  9520_0000   ????_????    20_0000  (   2 MB) EXT_DATA
+ *  9540_0000   ????_????   280_0000  (  40 MB) EXT_HEAP
  *  9F00_0000   9F00_0000     6_0000  ( 384 kB) TRACE_BUF
  *  9F06_0000   9F06_0000     1_0000  (  64 kB) EXC_DATA
  *  9F07_0000   9F07_0000     2_0000  ( 128 kB) PM_DATA (Power mgmt)
  */
 var evmDRA7XX_ExtMemMapDsp1 = {
-	EXT_CODE: { name: "EXT_CODE", base: 0x95000000, len:  0x100000, space: "code", access: "RWX" },
-	EXT_DATA: { name: "EXT_DATA", base: 0x95100000, len:  0x00100000, space: "data", access: "RW" },
-	EXT_HEAP: { name: "EXT_HEAP", base: 0x95200000, len:  0x0300000, space: "data", access: "RW" },
+	EXT_CODE: { name: "EXT_CODE", base: 0x95000000, len:  0x200000, space: "code", access: "RWX" },
+	EXT_DATA: { name: "EXT_DATA", base: 0x95200000, len:  0x00200000, space: "data", access: "RW" },
+	EXT_HEAP: { name: "EXT_HEAP", base: 0x95400000, len:  0x02800000, space: "data", access: "RW" },
 	TRACE_BUF: { name: "TRACE_BUF", base: 0x9F000000, len:  0x00060000, space: "data", access: "RW" },
 	EXC_DATA: { name: "EXC_DATA", base: 0x9F060000, len:  0x00010000, space: "data", access: "RW" },
 	PM_DATA: { name: "PM_DATA", base: 0x9F070000, len:  0x00020000, space: "data", access: "RWX" }
@@ -62,7 +62,7 @@ var TargetBuild = commonBld.getTargetBuild(arguments);
 * Setup for dsp target
 ************************************/
 var dsp_tgt            = xdc.useModule('ti.targets.elf.C66');
-dsp_tgt.rootDir        = java.lang.System.getenv("CGT_C66X_ELF_INSTALL_DIR");
+dsp_tgt.rootDir        = java.lang.System.getenv("C66XCGTOOLSPATH");
 dsp_tgt.ccOpts.suffix  += " --gcc -D___DSPBIOS___ -DDSP";
 dsp_tgt.ccOpts.suffix += " -ms ";
 //dsp_tgt.ccOpts.suffix += " -pden -pds=48 ";
@@ -99,13 +99,13 @@ if(trace_level == 0) {
     HwVer = ES10;
     var build_vayu = true;
     print("Selected Vayu for ES10");
-    
+
     dsp_tgt.ccOpts.suffix += " -DBUILD_FOR_VAYU";
 	dsp_tgt.ccOpts.suffix += " -DVAYU_ES10";
     dsp_tgt.platform = dsp_tgt.platforms[0];
-    
+
 }
-    
+
 /************************************
 * Setup for WIN target
 ************************************/

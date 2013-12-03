@@ -29,7 +29,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-  
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -101,13 +101,13 @@ static Int32 engine_close(UInt32 size, UInt32 *data);
 
 /* VIDDEC2 Decoder Server static function declarations */
 static VIDDEC2_Handle viddec2_create(Engine_Handle engine, String name, VIDDEC2_Params *params);
-static int viddec2_reloc(VIDDEC2_Handle handle, uint8_t *ptr, uint32_t len);					 
-static int viddec2_control(VIDDEC2_Handle handle, VIDDEC2_Cmd id, VIDDEC2_DynamicParams *dynParams, 
+static int viddec2_reloc(VIDDEC2_Handle handle, uint8_t *ptr, uint32_t len);
+static int viddec2_control(VIDDEC2_Handle handle, VIDDEC2_Cmd id, VIDDEC2_DynamicParams *dynParams,
                               VIDDEC2_Status *status );
 static int viddec2_process(VIDDEC2_Handle handle, XDM1_BufDesc *inBufs,
                          XDM_BufDesc *outBufs, VIDDEC2_InArgs *inArgs, VIDDEC2_OutArgs *outArgs );
-static int viddec2_delete(VIDDEC2_Handle handle);							 
-						 
+static int viddec2_delete(VIDDEC2_Handle handle);
+
 static struct {
     CreateFxn  create;
     ControlFxn control;
@@ -124,7 +124,7 @@ static struct {
     },
 };
 
-
+#define UNIVERSAL_COPY_EXAMPLE
 /* Static version string buffer.
  * Note: codec version can be large. For example, h264vdec needs more than
  * 58 characters, or the query will fail. */
@@ -139,7 +139,7 @@ static char    version_buffer[VERSION_SIZE];
  * it gets populated in the future versions of framework components.
  *
  * Forced off mode during video decode/encode is not supported. */
-#if 0 
+#if 0
 static void dce_suspend()
 {
     INFO("Preparing for suspend...");
@@ -153,6 +153,7 @@ static void dce_resume()
 }
 #endif
 
+#ifdef UNIVERSAL_COPY_EXAMPLE
 static void get_universal_version(UNIVERSAL_Handle h, char *buffer, unsigned size)
 {
     UNIVERSAL_DynamicParams    params =
@@ -180,20 +181,59 @@ static void get_universal_version(UNIVERSAL_Handle h, char *buffer, unsigned siz
         ERROR("Unknown version Error = %d:: buffer = %p size = %d", s, buffer, size);
     }
 }
+#else
+static void get_viddec2_version(VIDDEC2_Handle h, char *buffer, unsigned size)
+{
+    VIDDEC2_DynamicParams    params =
+    {
+        .size = sizeof(VIDDEC2_DynamicParams),
+    };
+
+    VIDDEC2_Status    status =
+    {
+        .size = sizeof(VIDDEC2_Status),
+        .data =
+        {
+            .buf = (XDAS_Int8 *)buffer,
+            .bufSize = (XDAS_Int32)size,
+        },
+    };
+
+    XDAS_Int32    s;
+
+    memset(buffer, 0, size);
+    s = VIDDEC2_control(h, XDM_GETVERSION, &params, &status);
+
+    if( s != VIDDEC2_EOK ) {
+        ERROR("Unknown version Error = %d:: buffer = %p size = %d", s, buffer, size);
+    }
+}
+
+#endif
 
 // VIDDEC2_create wrapper, to display version string in the trace.
 static VIDDEC2_Handle viddec2_create(Engine_Handle engine, String name, VIDDEC2_Params *params)
 {
+#ifdef UNIVERSAL_COPY_EXAMPLE
     UNIVERSAL_Handle   h;
 
     DEBUG(">> engine=%08x, name=%s, params=%p", engine, name, params);
 
     h = UNIVERSAL_create(engine, name, (IUNIVERSAL_Params*)params);
-	
-	get_universal_version(h, version_buffer, VERSION_SIZE);
-	
-    INFO("Created codec %s: version %s", name, version_buffer);
+    if(h){
+    	get_universal_version(h, version_buffer, VERSION_SIZE);
+        INFO("Created codec %s: version %s", name, version_buffer);
+      }
+#else
+    VIDDEC2_Handle    h;
 
+    h = VIDDEC2_create(engine, name, params);
+
+    if( h ) {
+        get_viddec2_version(h, version_buffer, VERSION_SIZE);
+        INFO("Created viddec2 %s: version %s", name, version_buffer);
+    }
+#endif
     return ((VIDDEC2_Handle)h);
 }
 
@@ -204,69 +244,74 @@ static int viddec2_reloc(VIDDEC2_Handle handle, uint8_t *ptr, uint32_t len)
 
 }
 
-static int viddec2_control(VIDDEC2_Handle handle, VIDDEC2_Cmd id, VIDDEC2_DynamicParams *dynParams, 
+static int viddec2_control(VIDDEC2_Handle handle, VIDDEC2_Cmd id, VIDDEC2_DynamicParams *dynParams,
                               VIDDEC2_Status *status )
 {
    int ret = 0;
+#ifdef UNIVERSAL_COPY_EXAMPLE
    UNIVERSAL_DynamicParams udynParam;
    UNIVERSAL_Status ustatus;
-   
+
    udynParam.size = sizeof(UNIVERSAL_DynamicParams);
    ustatus.size = sizeof(UNIVERSAL_Status);
-   //System_printf("command id is %d\n", id);
 
    if(id == XDM_GETVERSION){
        ustatus.data.numBufs = 1;
 	   ustatus.data.descs[0].buf = status->data.buf;
 	   ustatus.data.descs[0].bufSize = status->data.bufSize;
      }
-  
-   ret = UNIVERSAL_control((UNIVERSAL_Handle)handle, (UNIVERSAL_Cmd)id, 
+
+   ret = UNIVERSAL_control((UNIVERSAL_Handle)handle, (UNIVERSAL_Cmd)id,
                               &udynParam, &ustatus);
 
    /*universal copy supports only XDM_GETVERSION cmd id    */
-   /*This is to return success to VIDDEC2 application in case of other cmd ids */   
+   /*This is to return success to VIDDEC2 application in case of other cmd ids */
    if(ret == IUNIVERSAL_EFAIL)ret = IUNIVERSAL_EOK;
-   
+#else
+   ret = VIDDEC2_control(handle, id, dynParams, status);
+#endif
    return ret;
 }
 
 static int viddec2_process(VIDDEC2_Handle handle, XDM1_BufDesc *inBufs,
                          XDM_BufDesc *outBufs, VIDDEC2_InArgs *inArgs, VIDDEC2_OutArgs *outArgs )
-{    
+{
      int ret = 0;
+#ifdef UNIVERSAL_COPY_EXAMPLE
 	 XDM1_BufDesc inBuf, outBuf;
 	 UNIVERSAL_InArgs inArg;
 	 UNIVERSAL_OutArgs outArg;
-     
+
      inArg.size = sizeof(UNIVERSAL_InArgs);
-     outArg.size = sizeof(UNIVERSAL_OutArgs);	
+     outArg.size = sizeof(UNIVERSAL_OutArgs);
      outArg.extendedError = 0;
-	 //System_printf("Before VIDDEC2 process\n");
-	 
-	 //System_printf("outptr = 0x%x, size = %d\n",outBufs->bufs[0],outBufs->bufSizes[0]);
+
 	 inBuf.numBufs = 1;
 	 outBuf.numBufs = 1;
 	 inBuf.descs[0].buf = inBufs->descs[0].buf;
 	 inBuf.descs[0].bufSize = inBufs->descs[0].bufSize;
-		 
+
 	 outBuf.descs[0].buf = outBufs->bufs[0];
 	 outBuf.descs[0].bufSize = outBufs->bufSizes[0];
-   	 	   
-     ret = UNIVERSAL_process((UNIVERSAL_Handle)handle, &inBuf, &outBuf, NULL, 
-	                        &inArg, &outArg);
 
-	 //System_printf("After VIDDEC2 process\n");
-	 return ret;					 
+     ret = UNIVERSAL_process((UNIVERSAL_Handle)handle, &inBuf, &outBuf, NULL,
+	                        &inArg, &outArg);
+#else
+    ret = VIDDEC2_process(handle, inBufs, outBufs, inArgs, outArgs);
+#endif
+	  return ret;
 }
 
 static int viddec2_delete(VIDDEC2_Handle handle)
 {
-   //System_printf("Deleting VIDDEC2\n"); 
+#ifdef UNIVERSAL_COPY_EXAMPLE
    UNIVERSAL_delete((UNIVERSAL_Handle)handle);
+#else
+   VIDDEC2_delete(handle);
+#endif
    return 0;
 }
-						  
+
 
 /*
  * RPC message handlers
@@ -281,10 +326,10 @@ static int connect(void *msg)
 
         FCSettings_init();
         Diags_setMask(FCSETTINGS_MODNAME "+12345678LEXAIZFS");
-				
+
 		CESettings_init();
         Diags_setMask(CESETTINGS_MODNAME "+12345678LEXAIZFS");
-					
+
         /*
             * Enable use of runtime Diags_setMask per module:
             *
@@ -293,7 +338,7 @@ static int connect(void *msg)
         Diags_setMask("ti.ipc.rpmsg.RPMessage=EXLFS");
         Diags_setMask("ti.ipc.rpmsg.VirtQueue=EXLFS");
     }
-	
+
 	  CERuntime_init();
 
       if( !suspend_initialised ) {
@@ -318,7 +363,7 @@ static Int32 engine_open(UInt32 size, UInt32 *data)
     dce_engine_open   *engine_open_msg = (dce_engine_open *)payload[0].data;
     Engine_Handle      eng_handle = NULL;
     Uint32             num_params = MmRpc_NUM_PARAMETERS(size);
-    
+
     DEBUG(">> engine_open");
     if( num_params != 1 ) {
         ERROR("Invalid number of params sent");
@@ -326,10 +371,10 @@ static Int32 engine_open(UInt32 size, UInt32 *data)
     }
 
     dce_inv(engine_open_msg);
-    
+
 	eng_handle = Engine_open(engine_open_msg->name, engine_open_msg->engine_attrs, &engine_open_msg->error_code);
 	DEBUG("<< engine=%08x, ec=%d", eng_handle, engine_open_msg->error_code);
-    
+
     dce_clean(engine_open_msg);
 
     return ((Int32)eng_handle);
@@ -377,7 +422,7 @@ static Int32 codec_create(UInt32 size, UInt32 *data)
         ERROR("invalid number of params sent");
         return (-1);
     }
-	
+
 	if(codec_id != OMAP_DCE_VIDDEC2){
         ERROR("invalid codec id sent");
         return (-1);
@@ -386,7 +431,7 @@ static Int32 codec_create(UInt32 size, UInt32 *data)
     dce_inv(static_params);
 
     codec_handle = (void *)codec_fxns[codec_id].create(engine, codec_name, static_params);
-  
+
     DEBUG("<< codec_handle=%08x", codec_handle);
 
     dce_clean(static_params);
@@ -420,7 +465,7 @@ static int codec_control(UInt32 size, UInt32 *data)
         ERROR("invalid number of params sent");
         return (-1);
     }
-	
+
 	if(codec_id != OMAP_DCE_VIDDEC2){
         ERROR("invalid codec id sent");
         return (-1);
@@ -430,7 +475,7 @@ static int codec_control(UInt32 size, UInt32 *data)
     dce_inv(status);
 
     ret = (uint32_t) codec_fxns[codec_id].control(codec_handle, cmd_id, dyn_params, status);
- 
+
     DEBUG("<< result=%d", ret);
 
     dce_clean(dyn_params);
@@ -459,18 +504,18 @@ static int codec_get_version(UInt32 size, UInt32 *data)
         ERROR("invalid number of params sent");
         return (-1);
     }
-	
+
 	if(codec_id != OMAP_DCE_VIDDEC2){
         ERROR("invalid codec id sent");
         return (-1);
     }
-		
+
     version_buf = (void *)(H2P((MemHeader *)((IVIDDEC2_Status *)status)->data.buf));
-    
+
     dce_inv(dyn_params);
     dce_inv(status);
     dce_inv(version_buf);
-  
+
     ret = (uint32_t) codec_fxns[codec_id].control(codec_handle, XDM_GETVERSION, dyn_params, status);
 
     DEBUG("<< result=%d", ret);
@@ -562,7 +607,7 @@ static int codec_process(UInt32 size, UInt32 *data)
 	void           *outBufptr  = (void *)payload[6].data;
     Int32           ret = 0;
     void           *outBufSize = NULL;
-	
+
     DEBUG(">> codec_process");
 
     if( num_params != 7 ) {
@@ -574,7 +619,7 @@ static int codec_process(UInt32 size, UInt32 *data)
         ERROR("invalid codec id sent");
         return (-1);
     }
-		
+
 	outBufSize = (void *)(H2P((MemHeader *)((XDM_BufDesc *)outBufs)->bufSizes));
 
     dce_inv(inBufs);
@@ -583,12 +628,12 @@ static int codec_process(UInt32 size, UInt32 *data)
     dce_inv(outArgs);
 	dce_inv(outBufptr);
     dce_inv(outBufSize);
-	 
+
     DEBUG(">> codec=%p, inBufs=%p, outBufs=%p, inArgs=%p, outArgs=%p codec_id=%d",
           codec, inBufs, outBufs, inArgs, outArgs, codec_id);
 
     ret = codec_fxns[codec_id].process((void *)codec, inBufs, outBufs, inArgs, outArgs);
-	  
+
 
     DEBUG("<< ret=%d extendedError=%08x", ret, ((VIDDEC3_OutArgs *)outArgs)->extendedError);
 
@@ -623,7 +668,7 @@ static int codec_delete(UInt32 size, UInt32 *data)
         ERROR("invalid number of params sent");
         return (-1);
     }
-	
+
 	if(codec_id != OMAP_DCE_VIDDEC2){
         ERROR("invalid codec id sent");
         return (-1);
@@ -739,7 +784,7 @@ static void dce_main(uint32_t arg0, uint32_t arg1)
 {
     int            err = 0;
     dce_connect    dce_connect_msg;
-    
+
     err = MmServiceMgr_init();  // MmServiceMgr_init() will always return MmServiceMgr_S_SUCCESS.
 
     // setup the RCM Server create params
@@ -751,7 +796,7 @@ static void dce_main(uint32_t arg0, uint32_t arg1)
 
     // Get the Service Manager handle
     err = MmServiceMgr_register(SERVER_NAME, &rpc_Params, &dce_fxnSigTab, dce_SrvDelNotification);
-	
+
     if( err < 0 ) {
         DEBUG("failed to start " SERVER_NAME " \n");
 		//err = -1;
@@ -796,7 +841,7 @@ Bool dce_init(void)
     params.instance->name = "dce-server";
     params.priority = Thread_Priority_ABOVE_NORMAL;
 	Task_create(dce_main, &params, NULL);
-    
+
     return (TRUE);
 }
 

@@ -23,13 +23,12 @@ XDCVERSION	?= xdctools_3_25_02_70
 BIOSVERSION	?= bios_6_35_02_45
 IPCVERSION	?= ipc_3_10_00_08
 CEVERSION	?= codec_engine_3_24_00_08
-#FCVERSION	?= framework_components_3_24_00_09
-FCVERSION	?= framework_components_3_24_02_14_eng
+FCVERSION	?= framework_components_3_24_02_15
 XDAISVERSION	?= xdais_7_24_00_04
 OSALVERSION	?= osal_1_24_00_09
 
 # TI Compiler Settings
-export CGT_C66X_ELF_INSTALL_DIR ?= /opt/ti/TI_CGT_TI_C66X_7.2.3
+export C66XCGTOOLSPATH ?= /opt/ti/C6000CGT7.4.2
 
 # Define where the sources are
 DSPDCEMMSRC	= $(shell pwd)
@@ -96,21 +95,6 @@ vayu_config: unconfig
 	@echo ".\c"
 	@echo "done"
 
-omap5_config: unconfig
-	@echo "Creating new config\c"
-	@echo DSP_CONFIG = omap5_smp_config > bldcfg.mk
-	@echo ".\c"
-	@echo MYXDCARGS=\"profile=$(PROFILE) trace_level=$(TRACELEVEL) hw_type=OMAP5 hw_version=$(HWVERSION) BIOS_type=non-SMP\" >> bldcfg.mk
-	@echo ".\c"
-	@echo CHIP = OMAP5 >> bldcfg.mk
-	@echo ".\c"
-	@echo FORSMP = 0 >> bldcfg.mk
-	@echo ".\c"
-	@echo DSPBINNAME = "omap5-dsp.xe66x" >> bldcfg.mk
-	@echo INTBINNAME = "dsp.xe66x" >> bldcfg.mk
-	@echo ".\c"
-	@echo "done"
-
 clean: config
 	export XDCARGS=$(MYXDCARGS); \
 	 $(XDCROOT)/xdc --jobs=$(JOBS) clean -PD $(DSPDCEMMSRC)/platform/ti/dce/baseimage/.
@@ -120,8 +104,8 @@ ifeq ($(IPCSRC),)
 	@echo "ERROR: IPCSRC not set. Exiting..."
 	@echo "For more info, use 'make help'"
 	@exit 1
-else ifeq ($(CGT_C66X_ELF_INSTALL_DIR),)
-	@echo "ERROR: CGT_C66X_ELF_INSTALL_DIR not set. Exiting..."
+else ifeq ($(C66XCGTOOLSPATH),)
+	@echo "ERROR: C66XCGTOOLSPATH not set. Exiting..."
 	@echo "For more info, use 'make help'"
 	@exit 1
 endif
@@ -130,7 +114,7 @@ endif
 
 dspbin: build
 ifeq ($(FORSMP),0)
-	$(CGT_C66X_ELF_INSTALL_DIR)/bin/strip6x $(DSPDCEMMSRC)/platform/ti/dce/baseimage/out/dsp/$(PROFILE)/$(INTBINNAME) -o=$(DSPBINNAME)
+	$(C66XCGTOOLSPATH)/bin/strip6x $(DSPDCEMMSRC)/platform/ti/dce/baseimage/out/dsp/$(PROFILE)/$(INTBINNAME) -o=$(DSPBINNAME)
 else
 	@echo "***********Not yet implemented************"
 endif
@@ -144,7 +128,7 @@ tools:
 	@echo "FC      := $(FCPROD)"
 	@echo "CE      := $(CEPROD)"
 	@echo "XDAIS   := $(XDAISPROD)"
-	@echo "CGT_C66X_ELF_INSTALL_DIR := $(CGT_C66X_ELF_INSTALL_DIR)"
+	@echo "C66XCGTOOLSPATH := $(C66XCGTOOLSPATH)"
 	@echo " "
 
 sources:
@@ -174,7 +158,7 @@ help:
 	@echo "Please export the following variables: "
 	@echo " 1. BIOSTOOLSROOT - Directory where all the BIOS tools are installed."
 	@echo "                    If not mentioned, picks up the default, /opt/ti"
-	@echo " 2. CGT_C66X_ELF_INSTALL_DIR - DSP Code Generation Tools installation path"
+	@echo " 2. C66XCGTOOLSPATH - DSP Code Generation Tools installation path"
 	@echo "                       If not mentioned, tries the default install location, /opt/ti/TI_CGT_TI_ARM_5.0.1"
 	@echo " 3. IPCSRC - Absolute path of the $(IPCVERSION)"
 	@echo " 4. [Optional] - Any of the following variables can be defined to customize your build."
@@ -190,7 +174,7 @@ help:
 	@echo "       FCVERSION        = $(FCPROD)"
 	@echo "       XDAISVERSION     = $(XDAISPROD)"
 	@echo "       OSALVERSION      = $(OSALPROD)"
-	@echo "       CGT_C66X_ELF_INSTALL_DIR = $(CGT_C66X_ELF_INSTALL_DIR)"
+	@echo "       C66XCGTOOLSPATH = $(C66XCGTOOLSPATH)"
 	@echo " "
 	@echo "Use the appropriate make targets from the following: "
 	@echo "  Configure Platform: "

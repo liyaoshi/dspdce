@@ -29,7 +29,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 /*
  *  ======== custom_rsc_table_vayu_ipu.h ========
  *
@@ -81,8 +81,8 @@
 
 #define DSP_MEM_TEXT            0x95000000
 #define DSP_MEM_IOBUFS          0x80000000
-#define DSP_MEM_DATA            0x95100000
-#define DSP_MEM_HEAP            0x95200000
+#define DSP_MEM_DATA            0x95200000
+#define DSP_MEM_HEAP            0x95400000
 
 #define DSP_MEM_IPC_DATA        0x9F000000
 #define DSP_MEM_IPC_VRING       0xA0000000
@@ -94,10 +94,10 @@
 #define DSP_MEM_IPC_VRING_SIZE  SZ_1M
 #define DSP_MEM_IPC_DATA_SIZE   SZ_1M
 
-#define DSP_MEM_TEXT_SIZE       SZ_1M
+#define DSP_MEM_TEXT_SIZE       (SZ_1M * 2)
 
-#define DSP_MEM_DATA_SIZE       SZ_1M
-#define DSP_MEM_HEAP_SIZE       (SZ_1M * 3)
+#define DSP_MEM_DATA_SIZE       (SZ_1M * 2)
+#define DSP_MEM_HEAP_SIZE       (SZ_1M * 40)
 #define DSP_MEM_IOBUFS_SIZE     (SZ_1M * 90)
 
 /*
@@ -106,7 +106,7 @@
  */
 /* See CMA BASE addresses in Linux side: arch/arm/mach-omap2/remoteproc.c */
 
-#define PHYS_MEM_IPC_VRING      0x95000000
+#define PHYS_MEM_IPC_VRING      0x99800000
 #define PHYS_MEM_IOBUFS         0xBA300000
 
 /*
