@@ -106,7 +106,7 @@
  */
 /* See CMA BASE addresses in Linux side: arch/arm/mach-omap2/remoteproc.c */
 
-#define PHYS_MEM_IPC_VRING      0x99800000
+#define PHYS_MEM_IPC_VRING      0x99000000
 #define PHYS_MEM_IOBUFS         0xBA300000
 
 /*
