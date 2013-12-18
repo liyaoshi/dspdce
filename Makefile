@@ -21,7 +21,7 @@ REPO		:= $(BIOSTOOLSROOT)
 # in your environment.
 XDCVERSION	?= xdctools_3_25_04_88
 BIOSVERSION	?= bios_6_35_03_47
-IPCVERSION	?= ipc_3_10_00_08
+IPCVERSION	?= ipc_3_20_00_06
 CEVERSION	?= codec_engine_3_24_00_08
 FCVERSION	?= framework_components_3_24_02_15
 XDAISVERSION	?= xdais_7_24_00_04
