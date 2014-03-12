@@ -19,9 +19,9 @@ REPO		:= $(BIOSTOOLSROOT)
 
 # Different tool versions can easily be programmed by defining below variables
 # in your environment.
-XDCVERSION	?= xdctools_3_25_04_88
-BIOSVERSION	?= bios_6_35_03_47
-IPCVERSION	?= ipc_3_20_00_06
+XDCVERSION	?= xdctools_3_25_05_94
+BIOSVERSION	?= bios_6_37_02_27
+IPCVERSION	?= ipc_3_21_00_07
 CEVERSION	?= codec_engine_3_24_00_08
 FCVERSION	?= framework_components_3_24_02_15
 XDAISVERSION	?= xdais_7_24_00_04
