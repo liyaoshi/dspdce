@@ -77,6 +77,7 @@ typedef struct MemHeader {
     uint32_t offset;    /* offset for the actual data with in the buffer */
     int32_t map_fd;     /* mmapped fd */
     void * handle;      /*custom handle for the HLOS memallocator*/
+    int32_t flags;      /*Holds memory attributes*/
 } MemHeader;
 
 #define P2H(p) (&(((MemHeader *)(p))[-1]))
