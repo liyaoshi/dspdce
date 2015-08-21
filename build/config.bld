@@ -106,24 +106,6 @@ if(trace_level == 0) {
 
 }
 
-/************************************
-* Setup for WIN target
-************************************/
-var WIN = xdc.useModule('microsoft.targets.Win32');
-WIN.rootDir = "C:/Program Files/Microsoft Visual Studio 9.0";
-WIN.vcPath = [
-        ["VC8",
-                {
-                    compilerDir: "VC",
-                    dllPath: "Common7/IDE",
-                    sdkPath: "C:/Progra~1/MI2578~1/Windows/v6.0A",
-                    libs: " msvcrt.lib setargv.obj oldnames.lib ole32.lib oleaut32.lib olepro32.lib uuid.lib kernel32.lib user32.lib gdi32.lib advapi32.lib shell32.lib comctl32.lib"
-                }
-        ],
-];
-
-WIN.ccOpts.suffix += "-D___DSPBIOS___";
-
 Build.targets     = [
                         dsp_tgt,
                     ];
