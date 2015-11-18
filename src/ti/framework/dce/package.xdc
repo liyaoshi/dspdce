@@ -34,11 +34,6 @@
  *
  */
 
-requires ti.sdo.ce;
-requires ti.sdo.ce.video2;
-requires ti.sdo.ce.universal;
-requires ti.sdo.fc.utils;
-
 /*!
  *  ======== ti.dce ========
  */
