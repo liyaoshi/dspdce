@@ -95,6 +95,21 @@ vayu_config: unconfig
 	@echo ".\c"
 	@echo "done"
 
+omap5432_config: unconfig
+	@echo "Creating new config\c"
+	@echo DSP_CONFIG = omap5432_config > bldcfg.mk
+	@echo ".\c"
+	@echo MYXDCARGS=\"profile=$(PROFILE) trace_level=$(TRACELEVEL) hw_type=OMAP5432 hw_version=$(HWVERSION) BIOS_type=non-SMP\" >> bldcfg.mk
+	@echo ".\c"
+	@echo CHIP = OMAP5432 >> bldcfg.mk
+	@echo ".\c"
+	@echo FORSMP = 0 >> bldcfg.mk
+	@echo ".\c"
+	@echo DSPBINNAME = "tesla-dsp.xe64T" >> bldcfg.mk
+	@echo INTBINNAME = "dsp.xe64T" >> bldcfg.mk
+	@echo ".\c"
+	@echo "done"
+
 clean: config
 	export XDCARGS=$(MYXDCARGS); \
 	 $(XDCROOT)/xdc --jobs=$(JOBS) clean -PD $(DSPDCEMMSRC)/platform/ti/dce/baseimage/.
