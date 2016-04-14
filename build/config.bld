@@ -2,8 +2,8 @@
 var Build        = xdc.useModule('xdc.bld.BuildEnvironment');
 var commonBld    = xdc.loadCapsule("../build/common.bld");
 var commonOpts   = "-g";
-var hw_VAYU = 2;
-var ES10 = 1;
+var hw_OMA5 = 1;
+var ES20 = 2;
 
 for (x = 0; x < arguments.length; x++)
 {
@@ -31,7 +31,7 @@ for (x = 0; x < arguments.length; x++)
  *  9F06_0000   9F06_0000     1_0000  (  64 kB) EXC_DATA
  *  9F07_0000   9F07_0000     2_0000  ( 128 kB) PM_DATA (Power mgmt)
  */
-var evmDRA7XX_ExtMemMapDsp1 = {
+var evmOMAP5_ExtMemMapDsp = {
 	EXT_CODE: { name: "EXT_CODE", base: 0x95000000, len:  0x200000, space: "code", access: "RWX" },
 	EXT_DATA: { name: "EXT_DATA", base: 0x95200000, len:  0x00200000, space: "data", access: "RW" },
 	EXT_HEAP: { name: "EXT_HEAP", base: 0x95400000, len:  0x02800000, space: "data", access: "RW" },
@@ -40,14 +40,14 @@ var evmDRA7XX_ExtMemMapDsp1 = {
 	PM_DATA: { name: "PM_DATA", base: 0x9F070000, len:  0x00020000, space: "data", access: "RWX" }
 };
 
-Build.platformTable["ti.platforms.evmDRA7XX:dsp1"] = {
+Build.platformTable["ti.platforms.sdp5430:dsp"] = {
 	externalMemoryMap: [
-		[ "EXT_CODE", evmDRA7XX_ExtMemMapDsp1.EXT_CODE ],
-		[ "EXT_DATA", evmDRA7XX_ExtMemMapDsp1.EXT_DATA ],
-		[ "EXT_HEAP", evmDRA7XX_ExtMemMapDsp1.EXT_HEAP ],
-		[ "TRACE_BUF", evmDRA7XX_ExtMemMapDsp1.TRACE_BUF ],
-		[ "EXC_DATA", evmDRA7XX_ExtMemMapDsp1.EXC_DATA ],
-		[ "PM_DATA", evmDRA7XX_ExtMemMapDsp1.PM_DATA ]
+		[ "EXT_CODE", evmOMAP5_ExtMemMapDsp.EXT_CODE ],
+		[ "EXT_DATA", evmOMAP5_ExtMemMapDsp.EXT_DATA ],
+		[ "EXT_HEAP", evmOMAP5_ExtMemMapDsp.EXT_HEAP ],
+		[ "TRACE_BUF", evmOMAP5_ExtMemMapDsp.TRACE_BUF ],
+		[ "EXC_DATA", evmOMAP5_ExtMemMapDsp.EXC_DATA ],
+		[ "PM_DATA", evmOMAP5_ExtMemMapDsp.PM_DATA ]
 	],
 	codeMemory: "EXT_CODE",
 	dataMemory: "EXT_DATA",
@@ -61,7 +61,7 @@ var TargetBuild = commonBld.getTargetBuild(arguments);
 /************************************
 * Setup for dsp target
 ************************************/
-var dsp_tgt            = xdc.useModule('ti.targets.elf.C66');
+var dsp_tgt            = xdc.useModule('ti.targets.elf.C64T');
 dsp_tgt.rootDir        = java.lang.System.getenv("C66XCGTOOLSPATH");
 dsp_tgt.ccOpts.suffix  += " --gcc -D___DSPBIOS___ -DDSP";
 dsp_tgt.ccOpts.suffix += " -ms ";
@@ -74,7 +74,7 @@ dsp_tgt.lnkOpts.prefix += " --retain=.resource_table";
 //dsp_tgt.lnkOpts.prefix += " --cinit_compression=off";
 
 dsp_tgt.platforms = [
-			  "ti.platforms.evmDRA7XX:dsp1", //0
+			  "ti.platforms.sdp5430:dsp", //0
 		    ];
 
 /*****************  Tracing ********************/
@@ -95,13 +95,13 @@ if(trace_level == 0) {
 }
 /*****************  Tracing ********************/
 {
-    HwType = hw_VAYU;
-    HwVer = ES10;
+    HwType = hw_OMAP5;
+    HwVer = ES20;
     var build_vayu = true;
-    print("Selected Vayu for ES10");
+    print("Selected OMAP5 for ES20");
 
-    dsp_tgt.ccOpts.suffix += " -DBUILD_FOR_VAYU";
-	dsp_tgt.ccOpts.suffix += " -DVAYU_ES10";
+    dsp_tgt.ccOpts.suffix += " -DBUILD_FOR_OMAP5";
+	dsp_tgt.ccOpts.suffix += " -DOMAP5432_ES20";
     dsp_tgt.platform = dsp_tgt.platforms[0];
 
 }
