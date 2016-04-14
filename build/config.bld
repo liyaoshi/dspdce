@@ -2,7 +2,7 @@
 var Build        = xdc.useModule('xdc.bld.BuildEnvironment');
 var commonBld    = xdc.loadCapsule("../build/common.bld");
 var commonOpts   = "-g";
-var hw_OMA5 = 1;
+var hw_OMAP5 = 1;
 var ES20 = 2;
 
 for (x = 0; x < arguments.length; x++)
