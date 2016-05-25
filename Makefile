@@ -62,7 +62,7 @@ FORSMP		?= 0
 # Set Instrumentation to be allowed (ENABLE to enable it)
 SETINST		?= ENABLE
 # Set HW revision type- OMAP5:ES20, VAYU:ES10
-HWVERSION   ?= ES10
+HWVERSION   ?= ES20
 
 all: dspbin
 
